@@ -4,13 +4,15 @@ import { Line, LineChart, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContain
 import { Card, CardContent } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import type { DailyStockMetrics } from "@/lib/data"
+import { Loader2 } from "lucide-react"
 
 interface StockChartProps {
   data: DailyStockMetrics[]
-  predictedFutureData?: DailyStockMetrics[] // Changed to an array of DailyStockMetrics
+  predictedFutureData?: DailyStockMetrics[]
+  isLoading?: boolean // Added isLoading prop
 }
 
-export default function StockChart({ data, predictedFutureData }: StockChartProps) {
+export default function StockChart({ data, predictedFutureData, isLoading }: StockChartProps) {
   const chartData = [...data]
 
   // Append predicted data to chartData, marking them as predictions
@@ -26,12 +28,33 @@ export default function StockChart({ data, predictedFutureData }: StockChartProp
   const chartConfig = {
     close: {
       label: "Price",
-      color: "hsl(var(--primary))",
+      color: "hsl(0 0% 9%)", // Direct HSL for --primary (light mode)
     },
     predicted: {
       label: "Predicted Price",
-      color: "hsl(var(--destructive))",
+      color: "hsl(0 84.2% 60.2%)", // Direct HSL for --destructive (light mode)
     },
+  }
+
+  if (isLoading) {
+    return (
+      <Card className="w-full">
+        <CardContent className="p-4 flex items-center justify-center min-h-[300px]">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="ml-4 text-lg text-gray-500">Loading chart data...</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (!chartData || chartData.length === 0) {
+    return (
+      <Card className="w-full">
+        <CardContent className="p-4 flex items-center justify-center min-h-[300px]">
+          <p className="text-xl text-gray-500 dark:text-gray-400">No data to display for the chart.</p>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -52,7 +75,6 @@ export default function StockChart({ data, predictedFutureData }: StockChartProp
               <XAxis
                 dataKey="date"
                 tickFormatter={(value, index) => {
-                  // Show fewer labels for readability if many data points
                   if (chartData.length > 20) {
                     return index % 5 === 0 ? value : ""
                   }
@@ -68,7 +90,6 @@ export default function StockChart({ data, predictedFutureData }: StockChartProp
                 stroke="var(--color-close)"
                 name="Historical Price"
                 dot={({ index, payload }) => {
-                  // Only show dots for historical data, or special dot for first prediction
                   if (payload.isPrediction && index === data.length) {
                     return (
                       <circle
@@ -90,11 +111,10 @@ export default function StockChart({ data, predictedFutureData }: StockChartProp
                   dataKey="close"
                   stroke="var(--color-predicted)"
                   name="Predicted Price"
-                  dot={false} // No dots for the predicted line itself
+                  dot={false}
                   activeDot={false}
-                  // Filter data to only include the last historical point and all predicted points
                   data={chartData.filter((d, index) => index >= data.length - 1)}
-                  strokeDasharray="5 5" // Dashed line for prediction
+                  strokeDasharray="5 5"
                 />
               )}
             </LineChart>
