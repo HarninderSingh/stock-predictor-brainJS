@@ -1,7 +1,6 @@
-import dynamic from "next/dynamic"
+"use client"
 
-// Import the heavy client component **only in the browser**
-const StockPredictionClient = dynamic(() => import("@/components/stock-prediction-client"), { ssr: false })
+import StockPredictionClient from "@/components/stock-prediction-client"
 
 export default function Page() {
   return <StockPredictionClient />
