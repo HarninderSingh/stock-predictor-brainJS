@@ -8,39 +8,38 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { fetchHistoricalData, getMinMaxValues, prepareTrainingData, type DailyStockMetrics } from "@/lib/data"
-import { trainModel, predictFuturePrices } from "@/lib/predictor"
+import { trainModel, predictFuturePrices } from "@/lib/predictor" // Changed import to predictFuturePrices
 import StockChart from "@/components/stock-chart"
 import { Loader2 } from "lucide-react"
 
 export default function StockPredictionApp() {
-  const [symbol, setSymbol] = useState("AAPL")
+  const [symbol, setSymbol] = useState("AAPL") // Default stock symbol
   const [historicalData, setHistoricalData] = useState<DailyStockMetrics[]>([])
-  const [predictedFutureData, setPredictedFutureData] = useState<DailyStockMetrics[]>([])
+  const [predictedFutureData, setPredictedFutureData] = useState<DailyStockMetrics[]>([]) // Changed state
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [isPredicting, setIsPredicting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const WINDOW_SIZE = 5
-  const NUM_DAYS_TO_PREDICT = 5
+  // Define the window size for the neural network input
+  const WINDOW_SIZE = 5 // Predict next price based on the last 5 days' metrics
+  const NUM_DAYS_TO_PREDICT = 5 // Predict prices for the next 5 days
 
+  // fetchDataAndPredict now takes the symbol as an argument
   const fetchDataAndPredict = useCallback(
     async (currentSymbol: string) => {
       setError(null)
       setIsLoadingData(true)
-      setPredictedFutureData([])
+      setPredictedFutureData([]) // Reset predictions
       setHistoricalData([])
 
       try {
-        console.log(`Attempting to fetch data for symbol: ${currentSymbol}`)
-        const data = await fetchHistoricalData(currentSymbol)
-        console.log("Historical Data fetched:", data)
-
+        const data = await fetchHistoricalData(currentSymbol) // Use currentSymbol argument
         if (data.length < WINDOW_SIZE + NUM_DAYS_TO_PREDICT) {
-          const errorMessage = `Not enough historical data (${data.length} points) for ${currentSymbol} with a window size of ${WINDOW_SIZE} and ${NUM_DAYS_TO_PREDICT} future predictions. Need at least ${
-            WINDOW_SIZE + NUM_DAYS_TO_PREDICT
-          } points.`
-          setError(errorMessage)
-          console.error("Data fetch error:", errorMessage)
+          setError(
+            `Not enough historical data (${data.length} points) for ${currentSymbol} with a window size of ${WINDOW_SIZE} and ${NUM_DAYS_TO_PREDICT} future predictions. Need at least ${
+              WINDOW_SIZE + NUM_DAYS_TO_PREDICT
+            } points.`,
+          )
           setIsLoadingData(false)
           return
         }
@@ -48,9 +47,7 @@ export default function StockPredictionApp() {
         setIsLoadingData(false)
         await handlePredict(data)
       } catch (err: any) {
-        const errorMessage = err.message || "An unknown error occurred while fetching data."
-        setError(errorMessage)
-        console.error("Error fetching data:", errorMessage, err)
+        setError(err.message || "An unknown error occurred while fetching data.")
         setIsLoadingData(false)
       }
     },
@@ -67,17 +64,17 @@ export default function StockPredictionApp() {
       }
 
       setIsPredicting(true)
-      setPredictedFutureData([])
+      setPredictedFutureData([]) // Clear previous predictions
 
       const currentMinMax = getMinMaxValues(dataToPredict)
+
       const trainingData = prepareTrainingData(dataToPredict, WINDOW_SIZE, currentMinMax)
 
-      console.log("Training model with data:", trainingData.length, "samples")
-      const net = await trainModel(trainingData)
-      console.log("Model trained.")
+      await new Promise((resolve) => setTimeout(resolve, 100)) // UI breath
+
+      const net = trainModel(trainingData, { iterations: 5000, log: false })
 
       const lastHistoricalWindow = dataToPredict.slice(-WINDOW_SIZE)
-      console.log("Last historical window for prediction:", lastHistoricalWindow)
 
       const futurePredictions = predictFuturePrices(
         net,
@@ -86,7 +83,6 @@ export default function StockPredictionApp() {
         WINDOW_SIZE,
         NUM_DAYS_TO_PREDICT,
       )
-      console.log("Predicted Future Data:", futurePredictions)
 
       setPredictedFutureData(futurePredictions)
       setIsPredicting(false)
@@ -94,9 +90,11 @@ export default function StockPredictionApp() {
     [WINDOW_SIZE, NUM_DAYS_TO_PREDICT],
   )
 
+  // This useEffect now runs ONLY ONCE on component mount for the initial data fetch.
+  // It uses the initial 'symbol' state.
   useEffect(() => {
     fetchDataAndPredict(symbol)
-  }, [])
+  }, []) // Empty dependency array: runs only once on mount
 
   const handleSymbolChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSymbol(e.target.value.toUpperCase())
@@ -104,6 +102,8 @@ export default function StockPredictionApp() {
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    // This is the ONLY place where fetchDataAndPredict is called after initial mount,
+    // ensuring search only happens on explicit submission.
     fetchDataAndPredict(symbol)
   }
 
@@ -205,11 +205,12 @@ export default function StockPredictionApp() {
             </Card>
           </div>
 
-          <StockChart
-            data={historicalData}
-            predictedFutureData={predictedFutureData}
-            isLoading={isLoadingData || isPredicting} // Pass isLoading prop
-          />
+          {historicalData.length > 0 && (
+            <StockChart
+              data={historicalData}
+              predictedFutureData={predictedFutureData} // Pass the array of future data
+            />
+          )}
         </CardContent>
       </Card>
     </main>
