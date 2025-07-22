@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { Loader2 } from "lucide-react"
+import StockPredictionWrapper from "./dashboard/stock-prediction-wrapper"
 
 export default function HomePage() {
   const { data: session, status } = useSession()
@@ -27,5 +28,5 @@ export default function HomePage() {
     )
   }
 
-  return null // Will redirect
+  return <StockPredictionWrapper />
 }

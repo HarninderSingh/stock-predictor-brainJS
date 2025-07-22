@@ -1,8 +1,8 @@
 import type React from "react"
 import type { Metadata } from "next"
 import "./globals.css"
+import { Providers } from "@/components/providers" // Re-import Providers
 import { NavBar } from "@/components/nav-bar"
-import AuthProvider from "@/components/auth-provider" // Import the new AuthProvider
 
 export const metadata: Metadata = {
   title: "Stock Price Predictor",
@@ -18,12 +18,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          {" "}
-          {/* Wrap children with AuthProvider */}
+        <Providers>
           <NavBar />
           {children}
-        </AuthProvider>
+        </Providers>
       </body>
     </html>
   )
