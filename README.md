@@ -14,7 +14,7 @@ Any changes you make to your deployed app will be automatically pushed to this r
 
 Your project is live at:
 
-**[https://vercel.com/harninder-singhs-projects/v0-updated-stock-prediction](https://v0-updated-stock-prediction.vercel.app/)**
+**[https://vercel.com/harninder-singhs-projects/v0-updated-stock-prediction](https://vercel.com/harninder-singhs-projects/v0-updated-stock-prediction)**
 
 ## Build your app
 
