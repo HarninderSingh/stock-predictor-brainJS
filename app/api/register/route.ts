@@ -1,19 +1,19 @@
-import { NextResponse } from "next/server"
+import { NextResponse, type NextRequest } from "next/server" // Added type NextRequest
 import bcrypt from "bcryptjs"
 import User from "@/lib/models/user"
 import { connectToDatabase } from "@/lib/mongodb"
 
-// This log will tell us if the serverless function even starts loading this file.
 console.log("Register route file loaded and execution started.")
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  // Changed type from Request to NextRequest
   try {
     console.log("Attempting to connect to database for registration...")
     await connectToDatabase()
     console.log("Database connected successfully.")
 
     const body = await req.json()
-    const { name, email, password } = body
+    const { name, email, password } = body // Destructure here after logging body
     console.log("Received registration request with data:", {
       name,
       email,
