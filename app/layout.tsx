@@ -1,8 +1,8 @@
 import type React from "react"
 import type { Metadata } from "next"
 import "./globals.css"
-import { SessionProvider } from "next-auth/react"
 import { NavBar } from "@/components/nav-bar"
+import AuthProvider from "@/components/auth-provider" // Import the new AuthProvider
 
 export const metadata: Metadata = {
   title: "Stock Price Predictor",
@@ -18,10 +18,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <SessionProvider>
+        <AuthProvider>
+          {" "}
+          {/* Wrap children with AuthProvider */}
           <NavBar />
           {children}
-        </SessionProvider>
+        </AuthProvider>
       </body>
     </html>
   )
